@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="ico" href="img/favicon.ico" />
+    <link rel="stylesheet" href="css/global.css">
+    <title>Cadastro Funcionário</title>
+</head>
+<body>
+    <div>
+        <img  class="logo" src="./img/logo.png" alt="Logo da empresa">
+    </div>
+    <div>
+         <form class="formfuncionario"  action="model/cadastroCidadao.php" method="post">
+            <h1 class="title">Cadastre-se</h1>
+
+            <label class="dados" for="nome" id="nomeC">Nome completo:</label>
+            <input type="text" name="nome" id="nome" placeholder="Digite seu nome...">
+
+            <label class="dados" for="cep" id="cepC">CEP:</label>
+            <input type="text" name="cep" id="cep" placeholder="00000-000" maxlength="9">
+
+            <label class="dados" for="estado" id="estadoC">Estado:</label>
+            <input type="text" name="estado" id="estado" placeholder="Primeiro digite o CEP" readonly>
+
+                <label class="dados" for="cidade">Cidade:</label>
+                <input type="text" name="cidade" id="cidade" placeholder="Primeiro digite o CEP" readonly>
+           
+                    <script src="https://unpkg.com/imask"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Máscara para o CPF
+    const cpfInput = document.getElementById('cpf');
+    IMask(cpfInput, {
+        mask: '000.000.000-00'
+    });
+
+    // Máscara para o CEP
+    const cepInput = document.getElementById('cep');
+    IMask(cepInput, {
+        mask: '00000-000'
+    });
+
+
+    // Consulta de endereço via CEP (mesmo script anterior)
+    cepInput.addEventListener('blur', function () {
+        const cep = this.value.replace(/\D/g, '');
+
+        if (cep.length !== 8) return;
+
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => {
+                if (!response.ok) throw new Error('Falha na conexão com o serviço de CEP');
+                return response.json();
+            })
+            .then(data => {
+                const estadoEl = document.getElementById('estado');
+                const cidadeEl = document.getElementById('cidade');
+
+                if (!data.erro) {
+                    if (estadoEl) estadoEl.value = data.uf || '';
+                    if (cidadeEl) cidadeEl.value = data.localidade || '';
+                } else {
+                    alert('CEP não encontrado');
+                    if (estadoEl) estadoEl.value = '';
+                    if (cidadeEl) cidadeEl.value = '';
+                }
+            })
+            .catch(err => {
+                console.error('Erro ao consultar CEP:', err);
+                alert('Erro ao consultar CEP');
+            });
+    });
+});
+</script>
+
+                
+            <label class="dados" for="cpf" id="cpfC">CPF:</label>
+            <input type="text" name="cpf" id="cpf" placeholder="000.000.000-00" maxlength="14">
+            <!-- email -->
+            <label class="dados" for="emailC" id="emailC">Email:</label>
+            <input type="email" name="email" id="email" placeholder="Digite seu email...">
+
+            <label class="dados" for="senha" id="senhaC">Criar senha:</label>
+            <input type="password" name="senha" id="senha" placeholder="Letras (A,a) - Números (1,5,9) - Símbolos (@#$)">
+            <input class="botão" type="submit" value="Cadastrar">
+         </form>
+    </div>
+    <footer>
+        <p class="rodape"><b>Desenvolvido por Aquasense &copy; 2025</b></p>
+    </footer>
+    <div vw class="enabled">
+            <div vw-access-button class="active"></div>
+            <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
+        <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+        <script>
+            new window.VLibras.Widget('https://vlibras.gov.br/app');
+        </script>
+
+        <!-- === Leitor Falável Interativo === -->
+        <style>
+        #voiceReaderToggle {
+            position: fixed;
+            bottom: 90px;
+            right: 16px;
+            background: #0078d7;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 18px;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 9999;
+        }
+
+        #voiceReaderToggle.active {
+            background: #00a86b;
+        }
+
+        .reading-highlight {
+            background-color: rgba(255, 255, 0, 0.3);
+            transition: background-color 0.3s ease;
+        }
+
+        #readAllButton {
+            position: fixed;
+            bottom: 150px;
+            right: 16px;
+            background: #0078d7;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 18px;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 9999;
+        }
+        </style>
+
+            <button id="voiceReaderToggle" aria-pressed="false" title="Ativar leitor falado">🗣️ Leitor</button>
+            <button id="readAllButton" title="Ler toda a página">📖 Ler Tudo</button>
+
+            <script>
+            (function() {
+            let active = false;
+            let synth = window.speechSynthesis;
+            let currentUtterance = null;
+            const btn = document.getElementById('voiceReaderToggle');
+            const readAllBtn = document.getElementById('readAllButton');
+
+            if (!('speechSynthesis' in window)) {
+                btn.textContent = '🔇 Sem suporte';
+                btn.disabled = true;
+                readAllBtn.disabled = true;
+                alert('Seu navegador não suporta leitura por voz (SpeechSynthesis).');
+                return;
+            }
+
+            function getAllTextNodes() {
+                const texts = [];
+                const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                {
+                    acceptNode: function(node) {
+                    return node.parentNode.tagName !== 'SCRIPT' && 
+                            node.parentNode.tagName !== 'STYLE' && 
+                            node.textContent.trim() !== '' 
+                            ? NodeFilter.FILTER_ACCEPT 
+                            : NodeFilter.FILTER_REJECT;
+                    }
+                }
+                );
+
+                let node;
+                while (node = walker.nextNode()) {
+                texts.push(node);
+                }
+                return texts;
+            }
+
+            function readText(text, element) {
+                return new Promise((resolve) => {
+                if (synth.speaking) synth.cancel();
+                
+                if (element) element.classList.add('reading-highlight');
+                
+                const utter = new SpeechSynthesisUtterance(text);
+                utter.lang = 'pt-BR';
+                utter.rate = 1.0;
+                
+                utter.onend = () => {
+                    if (element) element.classList.remove('reading-highlight');
+                    resolve();
+                };
+
+                synth.speak(utter);
+                currentUtterance = utter;
+                });
+            }
+
+            async function readAllTexts() {
+                const textNodes = getAllTextNodes();
+                
+                for (let node of textNodes) {
+                if (!active) break;
+                const text = node.textContent.trim();
+                if (text) {
+                    await readText(text, node.parentElement);
+                }
+                }
+            }
+
+            btn.addEventListener('click', () => {
+                active = !active;
+                btn.classList.toggle('active', active);
+                btn.setAttribute('aria-pressed', active);
+                btn.textContent = active ? '🟢 Leitor Ativo' : '🗣️ Leitor';
+                if (!active && synth.speaking) synth.cancel();
+            });
+
+            readAllBtn.addEventListener('click', () => {
+                if (!active) {
+                active = true;
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', true);
+                btn.textContent = '🟢 Leitor Ativo';
+                }
+                readAllTexts();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!active || e.target.id === 'voiceReaderToggle' || e.target.id === 'readAllButton') return;
+
+                if (synth.speaking) synth.cancel();
+                document.querySelectorAll('.reading-highlight').forEach(el => el.classList.remove('reading-highlight'));
+
+                const text = e.target.innerText || e.target.textContent;
+                if (text && text.trim().length > 0) {
+                readText(text.trim(), e.target);
+                }
+            });
+            })();
+        </script>
+</body>
+</html>
