@@ -35,12 +35,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $msg_class = 'erro';
             } else {
                 $cidadao = $result->fetch_assoc();
-                // Comparação simples (texto puro). Depois pode usar password_hash/password_verify
+
                 if ($senha === $cidadao['senha']) {
+
+                    // Seta sessão
                     $_SESSION['cidadao_id'] = $cidadao['id'];
                     $_SESSION['cidadao_nome'] = $cidadao['nome'];
-                    header("Location: cidadaoDashboard.php");
-                    exit;
+
+                    // sinaliza sucesso para mostrar modal após renderizar a página
+                    $loginSuccess = true;
+                    $redirectAfter = 'cidadaoDashboard.php';
                 } else {
                     $msg = 'E-mail ou senha incorretos.';
                     $msg_class = 'erro';
@@ -57,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -66,15 +71,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title>Login Cidadão</title>
 <link rel="stylesheet" href="../css/global.css">
 <style>
-.mensagem { margin-bottom: 15px; padding: 10px; border-radius: 5px; text-align: center; }
-.mensagem.erro { background-color: #f8d7da; color: #721c24; }
-.mensagem.sucesso { background-color: #d4edda; color: #155724; }
+.modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s ease; }
+.modal.visible { display: flex; }
+.modal-box { background: #fff; width: 320px; padding: 30px 25px; border-radius: 18px; text-align: center; font-family: Arial, sans-serif; box-shadow: 0 8px 30px rgba(0,0,0,0.15); animation: pop 0.25s ease-out; }
+.icon { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #2ecc71; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; }
+.checkmark { width: 28px; height: 14px; border-left: 3px solid #2ecc71; border-bottom: 3px solid #2ecc71; transform: rotate(-45deg); animation: draw 0.4s ease-out; }
+.modal-box h2 { margin-top: 5px; color: #2ecc71; font-size: 22px; }
+.modal-box p { color: #555; margin: 10px 0 20px; }
+.modal-box button { background: #2ecc71; color: #fff; border: none; padding: 10px 25px; border-radius: 10px; cursor: pointer; font-size: 15px; transition: 0.2s; }
+.modal-box button:hover { background: #27ae60; }
+@keyframes pop { from { transform: scale(0.8); opacity: 0; } to   { transform: scale(1); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to   { opacity: 1; } }
+@keyframes draw { from { width: 0; height: 0; } to   { width: 28px; height: 14px; } }
 </style>
 </head>
 <body>
 <div>
     <img class="logo" src="../img/logo.png" alt="Logo da empresa">
-    <h2 class="frase">Informação rápida, cidade segura</h2>
 </div>
 <div>
 <form class="formfuncionario" action="" method="post">
@@ -95,8 +108,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <input class="botão" type="submit" value="Entrar">
 </form>
 </div>
+        <div id="modal-login" class="modal">
+            <div class="modal-box">
+                <div class="icon">
+                <span class="checkmark"></span>
+                </div>
+                <h2>Bem-vindo(a)!</h2>
+                <p>Login realizado com sucesso.</p>
+                <button onclick="fecharModalLogin()">Continuar</button>
+            </div>
+        </div>
 <footer>
 <p class="rodape"><b>Desenvolvido por Aquasense &copy; 2025</b></p>
 </footer>
+<script>
+function abrirModalLogin(){
+    const m = document.getElementById('modal-login');
+    if (!m) return;
+    m.classList.add('visible');
+    m.setAttribute('aria-hidden','false');
+}
+
+function fecharModalLogin(){
+    const m = document.getElementById('modal-login');
+    if (!m) return;
+    m.classList.remove('visible');
+    m.setAttribute('aria-hidden','true');
+}
+
+<?php if (!empty($loginSuccess)): ?>
+window.addEventListener('DOMContentLoaded', function(){
+    try{
+        abrirModalLogin();
+        setTimeout(function(){ window.location.href = '<?php echo $redirectAfter; ?>'; }, 2000);
+    }catch(e){ console.error(e); }
+});
+<?php endif; ?>
+</script>
 </body>
 </html>

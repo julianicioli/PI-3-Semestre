@@ -7,8 +7,7 @@
     $email = $_POST['email'];
     $senha = $_POST['senha'];
 
-    echo $nome . ' ' . $cep . ' ' . $estado . ' ' . $estado . ' ' . $cidade . ' ' . $cpf . ' ' . $email . ' ' . $senha;
-
+    // Recebe dados do formulário
     require_once __DIR__ . '/conexao.php';
 
     $bancodedados = new db();
@@ -23,7 +22,9 @@
     mysqli_stmt_bind_param($stmt, 'sssssss', $nome, $cep, $estado, $cidade, $cpf, $email, $senha);
 
     if (mysqli_stmt_execute($stmt)) {
-        echo 'Cadastro realizado com sucesso';
+        // redireciona para a página do formulário indicando sucesso
+        header('Location: ../TelaCadastroCidadao.html?sucesso=1');
+        exit;
     } else {
         echo 'Erro ao cadastrar: ' . mysqli_stmt_error($stmt);
     }

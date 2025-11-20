@@ -130,6 +130,16 @@ document.addEventListener('DOMContentLoaded', function () {
             <input type="password" name="senha" id="senha" placeholder="Letras (A,a) - Números (1,5,9) - Símbolos (@#$)">
             <input class="botão" type="submit" value="Cadastrar">
          </form>
+        <div id="modal-sucesso" class="modal">
+            <div class="modal-box">
+                <div class="icon">
+                <span class="checkmark"></span>
+                </div>
+                <h2>Cadastro concluído!</h2>
+                <p>Seu cadastro foi realizado com sucesso.</p>
+                <button onclick="fecharModal()">Ok</button>
+            </div>
+        </div>
     </div>
     <footer>
         <p class="rodape"><b>Desenvolvido por Aquasense &copy; 2025</b></p>
@@ -290,6 +300,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 readText(text.trim(), e.target);
                 }
             });
+            })();
+        </script>
+        <script>
+            function abrirModal() {
+                document.getElementById("modal-sucesso").style.display = "flex";
+            }
+
+            function fecharModal() {
+                document.getElementById("modal-sucesso").style.display = "none";
+            }
+            // Abre automaticamente o modal de sucesso quando a página recebe ?sucesso=1
+            (function() {
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.get('sucesso') === '1') {
+                        abrirModal();
+                        // Remover query string para evitar reabrir após refresh
+                        const clean = window.location.pathname;
+                        window.history.replaceState({}, document.title, clean);
+                    }
+                } catch (e) {
+                    console.error('Erro ao processar parâmetro sucesso:', e);
+                }
             })();
         </script>
 </body>
