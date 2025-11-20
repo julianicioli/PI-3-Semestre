@@ -9,7 +9,7 @@
 
     echo $nome . ' ' . $cep . ' ' . $estado . ' ' . $estado . ' ' . $cidade . ' ' . $cpf . ' ' . $email . ' ' . $senha;
 
-    require_once __DIR__ . 'conexao.php';
+    require_once __DIR__ . '/conexao.php';
 
     $bancodedados = new db();
     $link = $bancodedados->conecta_mysql();

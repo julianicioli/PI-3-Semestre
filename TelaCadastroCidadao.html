@@ -29,6 +29,12 @@
 
                 <label class="dados" for="cidade">Cidade:</label>
                 <input type="text" name="cidade" id="cidade" placeholder="Primeiro digite o CEP" readonly>
+
+                <label class="dados" for="bairro">Bairro:</label>
+                <input type="text" name="bairro" id="bairro" placeholder="Primeiro digite o CEP" readonly>
+
+                <label class="dados" for="rua">Rua:</label>
+                <input type="text" name="rua" id="rua" placeholder="Primeiro digite o CEP" readonly>
            
                     <script src="https://unpkg.com/imask"></script>
 <script>
@@ -38,6 +44,35 @@ document.addEventListener('DOMContentLoaded', function () {
     IMask(cpfInput, {
         mask: '000.000.000-00'
     });
+
+    // Função para mostrar modal de erro de CPF
+    function showCpfErrorModal(message) {
+        const modal = document.getElementById('cpfErrorModal');
+        if (!modal) {
+            // fallback simples
+            alert(message);
+            return;
+        }
+        modal.querySelector('.modal-message').textContent = message;
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('visible');
+        // foco no botão fechar para acessibilidade
+        const closeBtn = modal.querySelector('.modal-close');
+        if (closeBtn) closeBtn.focus();
+    }
+
+    // Validação: exigir exatamente 11 dígitos no CPF antes de permitir o envio
+    const form = document.querySelector('.formfuncionario');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const cpfDigits = (cpfInput && cpfInput.value) ? cpfInput.value.replace(/\D/g, '') : '';
+            if (cpfDigits.length !== 11) {
+                e.preventDefault();
+                showCpfErrorModal('CPF inválido. Informe exatamente 11 dígitos.');
+                if (cpfInput) cpfInput.focus();
+            }
+        });
+    }
 
     // Máscara para o CEP
     const cepInput = document.getElementById('cep');
@@ -60,14 +95,20 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 const estadoEl = document.getElementById('estado');
                 const cidadeEl = document.getElementById('cidade');
+                const bairroEl = document.getElementById('bairro');
+                const ruaEl = document.getElementById('rua');
 
                 if (!data.erro) {
                     if (estadoEl) estadoEl.value = data.uf || '';
                     if (cidadeEl) cidadeEl.value = data.localidade || '';
+                    if (bairroEl) bairroEl.value = data.bairro || '';
+                    if (ruaEl) ruaEl.value = data.logradouro || '';
                 } else {
                     alert('CEP não encontrado');
                     if (estadoEl) estadoEl.value = '';
                     if (cidadeEl) cidadeEl.value = '';
+                    if (bairroEl) bairroEl.value = '';
+                    if (ruaEl) ruaEl.value = '';
                 }
             })
             .catch(err => {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 19/10/2025 às 19:09
+-- Tempo de geração: 20/11/2025 às 20:04
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Banco de dados: `aquasensedb`
+-- Banco de dados: `aquasense`
 --
 
 -- --------------------------------------------------------
@@ -33,6 +33,8 @@ CREATE TABLE `cadastrocidadao` (
   `cep` varchar(9) DEFAULT NULL,
   `estado` varchar(50) DEFAULT 'SP',
   `cidade` varchar(50) DEFAULT 'Itapira',
+  `bairro` varchar(100) NOT NULL,
+  `rua` varchar(100) NOT NULL,
   `cpf` varchar(11) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
   `senha` varchar(255) NOT NULL,
@@ -43,8 +45,8 @@ CREATE TABLE `cadastrocidadao` (
 -- Despejando dados para a tabela `cadastrocidadao`
 --
 
-INSERT INTO `cadastrocidadao` (`id`, `nome`, `cep`, `estado`, `cidade`, `cpf`, `email`, `senha`, `data_cadastro`) VALUES
-(1, 'cavenaghi', '13973-274', 'SP', 'Itapira', '128.379.128', 'cavenas@gmail', '2189639812', '2025-10-19 17:09:05');
+INSERT INTO `cadastrocidadao` (`id`, `nome`, `cep`, `estado`, `cidade`, `bairro`, `rua`, `cpf`, `email`, `senha`, `data_cadastro`) VALUES
+(1, 'cavenaghi', '13973-274', 'SP', 'Itapira', '', '', '128.379.128', 'cavenas@gmail', '2189639812', '2025-10-19 17:09:05');
 
 --
 -- Índices para tabelas despejadas
