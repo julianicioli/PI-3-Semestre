@@ -78,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div>
     <img class="logo" src="../img/logo.png" alt="Logo da empresa">
+    <h2 class="frase">Informação rápida, cidade segura</h2>
 </div>
 <div>
 <form class="formfuncionario" action="" method="post">
