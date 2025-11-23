@@ -1,14 +1,15 @@
 <?php
-// adminDashboard.php
 require_once __DIR__ . '/../controller/adminController.php';
+
+// Pegar listas únicas de ruas e bairros do banco
+$ruas = array_unique(array_column($cidadaos, 'rua'));
+$bairroList = array_unique(array_column($cidadaos, 'bairro'));
 ?>
+
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
-
-<!-- Favicon -->
-  <link rel="icon" type="ico" href="../img/favicon.ico" />
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Administrador</title>
@@ -22,13 +23,10 @@ body { background-color: #f4f6f8; }
   position: fixed;
   left: 0;
   top: 0;
-
-  /* imagem de fundo */
   background-image: url('../img/backgroundSidebar.png');
-  background-size: cover;      /* cobre toda a sidebar */
-  background-position: center; /* centraliza a imagem */
-  background-repeat: no-repeat; /* não repete */
-  
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: #fff;
   padding: 1.5rem;
 }
@@ -36,81 +34,98 @@ body { background-color: #f4f6f8; }
 .sidebar a:hover { opacity: 0.8; }
 .sidebar i { margin-right: .5rem; }
 main { margin-left: 260px; padding: 2rem; }
-.card { border: none; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-h3 { margin-top: 2rem; }
+.card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+h2, h3 { margin-top: 1rem; }
+.table-responsive { max-height: 600px; overflow-y: auto; }
+textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
 </style>
 </head>
 <body>
+
 <div class="sidebar">
-    <h4 class="fw-bold mb-4 text-center"> AQUASENSE UI</h4>
-    <a href="../view/adminCidadao.php"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
+    <h4 class="fw-bold mb-4 text-center">AQUASENSE UI</h4>
+    <a href="../index.php"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
+    <a href="adminDashboard.php"><i class="bi bi-bell""></i> Avisos</a>
+    <a href="relatorio.php"><i class="bi bi-file-earmark-text"></i> Gerar Relatórios</a>
     <hr class="border-light">
     <small class="text-white-50 d-block text-center">v2.0 • PHP MVC</small>
 </div>
 
 <main>
-    <h2 class="fw-semibold mb-4">Dashboard Administrador</h2>
+<h2 class="fw-semibold mb-4">Dashboard Administrador</h2>
 
-    <!-- Cidadãos -->
-    <h3>Cidadãos</h3>
-    <div class="card p-3 mb-4">
-        <table class="table table-bordered">
-            <thead>
+<h3>Cidadãos</h3>
+<div class="card p-3 mb-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark text-center">
                 <tr>
+                    <th>Selecionar</th>
                     <th>Nome</th>
                     <th>CPF</th>
                     <th>Email</th>
+                    <th>Rua</th>
+                    <th>Bairro</th>
+                    <th>Cidade</th>
+                    <th>Estado</th>
                     <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if(!empty($cidadaos)): ?>
                     <?php foreach($cidadaos as $c): ?>
-                    <tr>
-                        <td><?= $c['nome'] ?></td>
-                        <td><?= $c['cpf'] ?></td>
-                        <td><?= $c['email'] ?></td>
-                        <td>
-                            <a href="?excluir_cidadao=<?= $c['id'] ?>" class="btn btn-danger btn-sm">Excluir</a>
-                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editarCidadao<?= $c['id'] ?>">Editar</button>
+                    <tr class="text-center">
+                        <td><input type="checkbox" class="email-checkbox" value="<?= htmlspecialchars($c['email']) ?>"></td>
+                        <td><?= htmlspecialchars($c['nome']) ?></td>
+                        <td><?= htmlspecialchars($c['cpf']) ?></td>
+                        <td><?= htmlspecialchars($c['email']) ?></td>
+                        <td class="rua"><?= htmlspecialchars($c['rua']) ?></td>
+                        <td class="bairro"><?= htmlspecialchars($c['bairro']) ?></td>
+                        <td><?= htmlspecialchars($c['cidade']) ?></td>
+                        <td><?= htmlspecialchars($c['estado']) ?></td>
+                        <td class="d-flex justify-content-center gap-1">
+                            <a href="?excluir_cidadao=<?= $c['id'] ?>" class="btn btn-danger btn-sm" title="Excluir"><i class="bi bi-trash-fill"></i></a>
+                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editarCidadao<?= $c['id'] ?>" title="Editar"><i class="bi bi-pencil-square"></i></button>
                         </td>
                     </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="9" class="text-center">Nenhum cidadão encontrado.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-                    <!-- Modal Edição Cidadão -->
-                    <div class="modal fade" id="editarCidadao<?= $c['id'] ?>" tabindex="-1">
-                      <div class="modal-dialog">
-                        <form method="POST" class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Editar Cidadão</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                <input class="form-control mb-2" name="nome" value="<?= $c['nome'] ?>">
-                                <input class="form-control mb-2" name="cep" value="<?= $c['cep'] ?>">
-                                <input class="form-control mb-2" name="estado" value="<?= $c['estado'] ?>">
-                                <input class="form-control mb-2" name="cidade" value="<?= $c['cidade'] ?>">
-                                <input class="form-control mb-2" name="cpf" value="<?= $c['cpf'] ?>">
-                                <input class="form-control mb-2" name="email" value="<?= $c['email'] ?>">
-                                <input class="form-control mb-2" name="senha" value="<?= $c['senha'] ?>">
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" name="atualizar_cidadao" class="btn btn-primary">Salvar</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            </div>
-                        </form>
-                      </div>
-                    </div>
-                    <h2>Enviar Aviso aos Cidadãos</h2>
+<h3>Filtrar e enviar aviso</h3>
+<form method="POST" action="../controller/avisoController.php">
+    <div class="row mb-3">
+        <div class="col">
+            <label for="filtroRua">Filtrar por Rua:</label>
+            <select id="filtroRua" class="form-select" onchange="selecionarPorRua()">
+                <option value="">--Selecionar Rua--</option>
+                <?php foreach($ruas as $r): ?>
+                    <option value="<?= htmlspecialchars($r) ?>"><?= htmlspecialchars($r) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="col">
+            <label for="filtroBairro">Filtrar por Bairro:</label>
+            <select id="filtroBairro" class="form-select" onchange="selecionarPorBairro()">
+                <option value="">--Selecionar Bairro--</option>
+                <?php foreach($bairroList as $b): ?>
+                    <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+    </div>
 
-<form method="POST">
-    <label>Filtrar por cidade:</label>
-    <input type="text" name="regiao" placeholder="Cidade ou estado">
-    <button type="submit" name="filtro_regiao">Filtrar</button>
-</form>
+<div class="mb-3">
+    <label>Mensagem de alerta:</label>
+    <textarea name="mensagem" placeholder="Mensagem de alerta" required><?= $_POST['mensagem'] ?? '' ?></textarea>
+</div>
 
-<form method="POST">
-    <textarea name="mensagem" placeholder="Mensagem de alerta" required></textarea>
+<div class="table-responsive mb-3">
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -124,31 +139,51 @@ h3 { margin-top: 2rem; }
         </thead>
         <tbody>
             <?php foreach($cidadaos as $c): ?>
-                <tr>
-                    <td><input type="checkbox" name="emails[]" value="<?= $c['email'] ?>"></td>
-                    <td><?= $c['nome'] ?></td>
-                    <td><?= $c['email'] ?></td>
-                    <td><?= $c['cidade'] ?></td>
-                    <td><?= $c['rua'] ?></td>
-                    <td><?= $c['bairro'] ?></td>
-                </tr>
+            <tr>
+                <td><input type="checkbox" class="email-checkbox" name="emails[]" value="<?= htmlspecialchars($c['email']) ?>"></td>
+                <td><?= htmlspecialchars($c['nome']) ?></td>
+                <td><?= htmlspecialchars($c['email']) ?></td>
+                <td><?= htmlspecialchars($c['cidade']) ?></td>
+                <td class="rua"><?= htmlspecialchars($c['rua']) ?></td>
+                <td class="bairro"><?= htmlspecialchars($c['bairro']) ?></td>
+            </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
-    <button type="submit" name="enviar_aviso">Enviar Aviso</button>
+</div>
+
+<button type="submit" name="enviar_aviso" class="btn btn-danger"><i class="bi bi-exclamation-triangle-fill"></i> Enviar Aviso</button>
+
+
 </form>
 
-<?php if(isset($msgSucesso)) echo "<p style='color:green;'>$msgSucesso</p>"; ?>
+<script>
+function selecionarPorRua() {
+    let ruaSelecionada = document.getElementById('filtroRua').value;
+    document.querySelectorAll('.email-checkbox').forEach(cb => cb.checked = false);
+    if(ruaSelecionada) {
+        document.querySelectorAll('tr').forEach(tr => {
+            let tdRua = tr.querySelector('.rua');
+            let cb = tr.querySelector('.email-checkbox');
+            if(tdRua && tdRua.textContent === ruaSelecionada && cb) cb.checked = true;
+        });
+    }
+}
 
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-
-
-</main>
+function selecionarPorBairro() {
+    let bairroSelecionado = document.getElementById('filtroBairro').value;
+    document.querySelectorAll('.email-checkbox').forEach(cb => cb.checked = false);
+    if(bairroSelecionado) {
+        document.querySelectorAll('tr').forEach(tr => {
+            let tdBairro = tr.querySelector('.bairro');
+            let cb = tr.querySelector('.email-checkbox');
+            if(tdBairro && tdBairro.textContent === bairroSelecionado && cb) cb.checked = true;
+        });
+    }
+}
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
