@@ -1,9 +1,46 @@
 <?php
 require_once __DIR__ . '/../controller/adminController.php';
+require_once __DIR__ . '/../model/Medicao.php';
+require_once __DIR__ . '/../controller/avisoController.php'; // incluir função de alerta automático
+
+// Configurações
+$nivelCritico = 200; // mm
+$bairroAlerta = 'Boa Vista';
 
 // Pegar listas únicas de ruas e bairros do banco
 $ruas = array_unique(array_column($cidadaos, 'rua'));
 $bairroList = array_unique(array_column($cidadaos, 'bairro'));
+
+// Pegar medições do banco
+$medicoes = Medicao::listarUltimosDias(7); // últimos 7 dias
+$datas = [];
+$nivelAgua = [];
+$alertaDisparado = false;
+
+foreach($medicoes as $m) {
+    $datas[] = date('d/m H:i', strtotime($m['data']));
+    $nivelAgua[] = $m['nivel_agua'];
+
+    // Verifica se alguma medição atinge nível crítico
+    if($m['nivel_agua'] >= $nivelCritico) {
+        $alertaDisparado = true;
+    }
+}
+
+// Disparo automático do aviso se atingir nível crítico
+if ($alertaDisparado) {
+    $emailsAlerta = [];
+    foreach($cidadaos as $c) {
+        if ($c['bairro'] === $bairroAlerta) {
+            $emailsAlerta[] = $c['email'];
+        }
+    }
+
+    if (!empty($emailsAlerta)) {
+        $mensagem = "⚠️ Atenção! O nível do rio atingiu $nivelCritico mm no bairro $bairroAlerta. Tome precauções!";
+        enviarAvisoAutomatico($emailsAlerta, $mensagem);
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -15,29 +52,19 @@ $bairroList = array_unique(array_column($cidadaos, 'bairro'));
 <title>Dashboard Administrador</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 body { background-color: #f4f6f8; }
-.sidebar {
-  width: 240px;
-  height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-  background-image: url('../img/backgroundSidebar.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  color: #fff;
-  padding: 1.5rem;
-}
+.sidebar { width: 240px; height: 100vh; position: fixed; left: 0; top: 0; background-image: url('../img/backgroundSidebar.png'); background-size: cover; background-position: center; background-repeat: no-repeat; color: #fff; padding: 1.5rem; }
 .sidebar a { color: #fff; text-decoration: none; display: flex; align-items: center; margin-bottom: .8rem; font-weight: 500; }
 .sidebar a:hover { opacity: 0.8; }
 .sidebar i { margin-right: .5rem; }
 main { margin-left: 260px; padding: 2rem; }
-.card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+.card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5rem; padding: 1.5rem; }
 h2, h3 { margin-top: 1rem; }
 .table-responsive { max-height: 600px; overflow-y: auto; }
 textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
+.alerta-critico { background-color: #ffcccc; padding: 0.75rem; border-radius: 5px; margin-bottom: 1rem; font-weight: bold; color: #900; }
 </style>
 </head>
 <body>
@@ -45,7 +72,7 @@ textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; bo
 <div class="sidebar">
     <h4 class="fw-bold mb-4 text-center">AQUASENSE UI</h4>
     <a href="../index.php"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
-    <a href="adminDashboard.php"><i class="bi bi-bell""></i> Avisos</a>
+    <a href="adminDashboard.php"><i class="bi bi-bell"></i> Avisos</a>
     <a href="relatorio.php"><i class="bi bi-file-earmark-text"></i> Gerar Relatórios</a>
     <hr class="border-light">
     <small class="text-white-50 d-block text-center">v2.0 • PHP MVC</small>
@@ -54,13 +81,26 @@ textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; bo
 <main>
 <h2 class="fw-semibold mb-4">Dashboard Administrador</h2>
 
+<?php if(!empty($alertaDisparado)): ?>
+
+<div class="alerta-critico">
+    ⚠️ Atenção! O nível do rio atingiu o valor crítico de <?= $nivelCritico ?> mm no bairro <?= $bairroAlerta ?>. Envio de alerta disparado.
+</div>
+<?php endif; ?>
+
+<!-- Gráfico de nível de água -->
+
+<div class="card mb-4">
+    <h3 class="mb-3">Nível de Água do Rio (últimos 7 dias)</h3>
+    <canvas id="graficoNivel" style="max-height:300px;"></canvas>
+</div>
+
 <h3>Cidadãos</h3>
 <div class="card p-3 mb-4">
     <div class="table-responsive">
         <table class="table table-hover align-middle">
             <thead class="table-dark text-center">
                 <tr>
-                    <th>Selecionar</th>
                     <th>Nome</th>
                     <th>CPF</th>
                     <th>Email</th>
@@ -75,7 +115,6 @@ textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; bo
                 <?php if(!empty($cidadaos)): ?>
                     <?php foreach($cidadaos as $c): ?>
                     <tr class="text-center">
-                        <td><input type="checkbox" class="email-checkbox" value="<?= htmlspecialchars($c['email']) ?>"></td>
                         <td><?= htmlspecialchars($c['nome']) ?></td>
                         <td><?= htmlspecialchars($c['cpf']) ?></td>
                         <td><?= htmlspecialchars($c['email']) ?></td>
@@ -120,6 +159,7 @@ textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; bo
         </div>
     </div>
 
+
 <div class="mb-3">
     <label>Mensagem de alerta:</label>
     <textarea name="mensagem" placeholder="Mensagem de alerta" required><?= $_POST['mensagem'] ?? '' ?></textarea>
@@ -127,7 +167,7 @@ textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; bo
 
 <div class="table-responsive mb-3">
     <table class="table table-bordered">
-        <thead>
+        <thead class="table-dark text-center">
             <tr>
                 <th>Selecionar</th>
                 <th>Nome</th>
@@ -181,6 +221,30 @@ function selecionarPorBairro() {
         });
     }
 }
+</script>
+
+<script>
+const ctx = document.getElementById('graficoNivel').getContext('2d');
+const graficoNivel = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: <?= json_encode($datas) ?>,
+        datasets: [{
+            label: 'Nível de Água (mm)',
+            data: <?= json_encode($nivelAgua) ?>,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 4,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: true } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
