@@ -2,7 +2,7 @@
 class db {
     private $hostname = 'localhost';
     // Use the database name from the SQL dump files (aquasense)
-    private $bancodedados = 'aquasense';
+    private $bancodedados = 'aquasensedb';
     private $usuario = 'root';
     private $senha = '';
     private $mysqli = null;

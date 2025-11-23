@@ -12,14 +12,7 @@ if (isset($_GET['excluir_cidadao'])) {
     exit;
 }
 
-// Excluir funcionário
-if (isset($_GET['excluir_funcionario'])) {
-    Funcionario::excluir($_GET['excluir_funcionario']);
-    header("Location: adminDashboard.php");
-    exit;
-}
-
-// Atualizar cidadão
+// Atualizar cidadão (agora com rua e bairro)
 if (isset($_POST['atualizar_cidadao'])) {
     Cidadao::atualizar(
         $_POST['id'],
@@ -27,6 +20,8 @@ if (isset($_POST['atualizar_cidadao'])) {
         $_POST['cep'],
         $_POST['estado'],
         $_POST['cidade'],
+        $_POST['rua'],
+        $_POST['bairro'],
         $_POST['cpf'],
         $_POST['email'],
         $_POST['senha']
@@ -35,33 +30,10 @@ if (isset($_POST['atualizar_cidadao'])) {
     exit;
 }
 
-// Atualizar funcionário
-if (isset($_POST['atualizar_funcionario'])) {
-    Funcionario::atualizar(
-        $_POST['id'],
-        $_POST['nome'],
-        $_POST['rg'],
-        $_POST['cpf'],
-        $_POST['numero_registro'],
-        $_POST['cargo'],
-        $_POST['senha']
-    );
-    header("Location: adminDashboard.php");
-    exit;
-}
-
-// Criar novo funcionário
-if (isset($_POST['novo_funcionario'])) {
-    Funcionario::criar(
-        $_POST['nome'],
-        $_POST['rg'],
-        $_POST['cpf'],
-        $_POST['numero_registro'],
-        $_POST['cargo'],
-        $_POST['senha']
-    );
-    header("Location: adminDashboard.php");
-    exit;
+// Filtrar cidadãos por região (opcional, usado para envio de aviso)
+$regiao = $_POST['regiao'] ?? null;
+if ($regiao) {
+    $cidadaos = Cidadao::listarPorRegiao($regiao);
 }
 
 require_once __DIR__ . '/../view/adminDashboard.php';

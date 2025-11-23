@@ -43,7 +43,7 @@ h3 { margin-top: 2rem; }
 <body>
 <div class="sidebar">
     <h4 class="fw-bold mb-4 text-center"> AQUASENSE UI</h4>
-    <a href="../index.html"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
+    <a href="../view/adminCidadao.php"><i class="bi bi-bar-chart-line"></i> Dashboard</a>
     <hr class="border-light">
     <small class="text-white-50 d-block text-center">v2.0 • PHP MVC</small>
 </div>
@@ -101,63 +101,44 @@ h3 { margin-top: 2rem; }
                         </form>
                       </div>
                     </div>
+                    <h2>Enviar Aviso aos Cidadãos</h2>
 
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
+<form method="POST">
+    <label>Filtrar por cidade:</label>
+    <input type="text" name="regiao" placeholder="Cidade ou estado">
+    <button type="submit" name="filtro_regiao">Filtrar</button>
+</form>
 
-    <!-- Funcionários -->
-    <h3>Funcionários</h3>
-    <div class="card p-3 mb-4">
-        <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#novoFuncionario">Novo Funcionário</button>
-        <table class="table table-bordered">
-            <thead>
+<form method="POST">
+    <textarea name="mensagem" placeholder="Mensagem de alerta" required></textarea>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Selecionar</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Cidade</th>
+                <th>Rua</th>
+                <th>Bairro</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach($cidadaos as $c): ?>
                 <tr>
-                    <th>Nome</th>
-                    <th>CPF</th>
-                    <th>Cargo</th>
-                    <th>Ações</th>
+                    <td><input type="checkbox" name="emails[]" value="<?= $c['email'] ?>"></td>
+                    <td><?= $c['nome'] ?></td>
+                    <td><?= $c['email'] ?></td>
+                    <td><?= $c['cidade'] ?></td>
+                    <td><?= $c['rua'] ?></td>
+                    <td><?= $c['bairro'] ?></td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php if(!empty($funcionarios)): ?>
-                    <?php foreach($funcionarios as $f): ?>
-                    <tr>
-                        <td><?= $f['nome'] ?></td>
-                        <td><?= $f['cpf'] ?></td>
-                        <td><?= $f['cargo'] ?></td>
-                        <td>
-                            <a href="?excluir_funcionario=<?= $f['id'] ?>" class="btn btn-danger btn-sm">Excluir</a>
-                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editarFuncionario<?= $f['id'] ?>">Editar</button>
-                        </td>
-                    </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <button type="submit" name="enviar_aviso">Enviar Aviso</button>
+</form>
 
-                    <!-- Modal Edição Funcionário -->
-                    <div class="modal fade" id="editarFuncionario<?= $f['id'] ?>" tabindex="-1">
-                      <div class="modal-dialog">
-                        <form method="POST" class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Editar Funcionário</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <input type="hidden" name="id" value="<?= $f['id'] ?>">
-                                <input class="form-control mb-2" name="nome" value="<?= $f['nome'] ?>">
-                                <input class="form-control mb-2" name="rg" value="<?= $f['rg'] ?>">
-                                <input class="form-control mb-2" name="cpf" value="<?= $f['cpf'] ?>">
-                                <input class="form-control mb-2" name="numero_registro" value="<?= $f['numero_registro'] ?>">
-                                <input class="form-control mb-2" name="cargo" value="<?= $f['cargo'] ?>">
-                                <input class="form-control mb-2" name="senha" value="<?= $f['senha'] ?>">
-                            </div>
-                            <div class="modal-footer">
-                                <button type="submit" name="atualizar_funcionario" class="btn btn-primary">Salvar</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            </div>
-                        </form>
-                      </div>
-                    </div>
+<?php if(isset($msgSucesso)) echo "<p style='color:green;'>$msgSucesso</p>"; ?>
 
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -165,29 +146,6 @@ h3 { margin-top: 2rem; }
         </table>
     </div>
 
-    <!-- Modal Novo Funcionário -->
-    <div class="modal fade" id="novoFuncionario" tabindex="-1">
-      <div class="modal-dialog">
-        <form method="POST" class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Novo Funcionário</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input class="form-control mb-2" name="nome" placeholder="Nome">
-                <input class="form-control mb-2" name="rg" placeholder="RG">
-                <input class="form-control mb-2" name="cpf" placeholder="CPF">
-                <input class="form-control mb-2" name="numero_registro" placeholder="Número de Registro">
-                <input class="form-control mb-2" name="cargo" placeholder="Cargo">
-                <input class="form-control mb-2" name="senha" placeholder="Senha">
-            </div>
-            <div class="modal-footer">
-                <button type="submit" name="novo_funcionario" class="btn btn-success">Cadastrar</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </div>
-        </form>
-      </div>
-    </div>
 
 </main>
 

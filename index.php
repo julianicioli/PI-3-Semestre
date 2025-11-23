@@ -73,8 +73,8 @@
 <body>
   <div class="sidebar">
     <h4 class="fw-bold mb-4 text-center">AQUASENSE UI</h4>
-    <a href="#"><i class="bi bi-bar-chart-line"></i> Notícias</a>
-    <a href="#"><i class="bi bi-person-plus"></i> Cadastro Cidadão</a>
+    <a href="controller/adminController.php"><i class="bi bi-bar-chart-line"></i> Notícias</a>
+    <a href="TelaCadastroCidadao.html"><i class="bi bi-person-plus"></i> Cadastro Cidadão</a>
     <a href="#"><i class="bi bi-person-circle"></i> Login Cidadão</a>
     <a href="#"><i class="bi bi-person-badge"></i> Login Funcionário</a>
     <hr class="border-light">
@@ -102,8 +102,6 @@
           <div class="chart-area-trend">
             <canvas id="chartTrend"></canvas>
           </div>
-          <!-- Se quiser mostrar estatísticas rápidas abaixo do gráfico: -->
-          
         </div>
       </div>
     </div>
@@ -129,7 +127,7 @@
 
       <div class="col-md-3">
         <div class="card text-center p-3">
-          <h6>Pressão</h6>
+          <h6>Pressão Atmosférica</h6>
           <div class="gauge-container"><canvas id="gaugePress"></canvas></div>
           <strong id="pressValor">-- hPa</strong>
         </div>
@@ -137,14 +135,14 @@
 
       <div class="col-md-3">
         <div class="card text-center p-3">
-          <h6>Bateria</h6>
-          <div class="gauge-container"><canvas id="gaugeBatt"></canvas></div>
-          <strong id="battValor">-- mV</strong>
+          <h6>Vazão (L/s)</h6>
+          <div class="gauge-container"><canvas id="gaugeFlow"></canvas></div>
+          <strong id="flowValor">350 L/s</strong>
         </div>
       </div>
+
     </div>
 
-    <!-- CARD com gráfico de clima e previsão (tudo dentro do mesmo card, com espaço reservado) -->
     <div class="card p-4 mt-4 card-clima">
       <h5 class="fw-semibold mb-3">Previsão do Tempo — Itapira (5 dias)</h5>
 
@@ -152,7 +150,6 @@
         <canvas id="chartClima"></canvas>
       </div>
 
-      <!-- forecast dentro do mesmo card, abaixo do gráfico -->
       <div id="forecastRow" class="forecast-cards-container"></div>
     </div>
   </main>
@@ -179,26 +176,29 @@
       });
     }
 
-    const gaugeNivel = createGauge(document.getElementById('gaugeNivel'), 246, 0, 400, '#007bff');
-    const gaugeTemp  = createGauge(document.getElementById('gaugeTemp'), 24, 0, 40, '#0d6efd');
-    const gaugeUmid  = createGauge(document.getElementById('gaugeUmid'), 75, 0, 100, '#00bfa6');
-    const gaugePress = createGauge(document.getElementById('gaugePress'), 984, 900, 1100, '#ff8800');
-    const gaugeBatt  = createGauge(document.getElementById('gaugeBatt'), 3598, 2900, 4200, '#dc3545');
-
     function updateGauge(chart, value, min, max) {
       chart.data.datasets[0].data = [Math.max(0, value - min), Math.max(0, max - value)];
       chart.update();
     }
 
-    /* ============ Estado inicial ============ */
-    let estado = { nivel: 246, temp: 24.0, umid: 75, press: 984, batt: 3598 };
+    /* ============ CRIAÇÃO DOS GAUGES ============ */
+    const gaugeNivel = createGauge(document.getElementById('gaugeNivel'), 246, 0, 400, '#007bff');
+    const gaugeTemp  = createGauge(document.getElementById('gaugeTemp'), 24, 0, 40, '#0d6efd');
+    const gaugeUmid  = createGauge(document.getElementById('gaugeUmid'), 75, 0, 100, '#00bfa6');
+    const gaugePress = createGauge(document.getElementById('gaugePress'), 984, 900, 1100, '#ff8800');
+
+    // gaugeFlow criado SOMENTE UMA VEZ
+    const gaugeFlow  = createGauge(document.getElementById('gaugeFlow'), 350, 0, 1000, '#20c997');
+
+    /* ============ Estado inicial (sem bateria) ============ */
+    let estado = { nivel: 246, temp: 24.0, umid: 75, press: 984, flow: 350 };
 
     function updateDisplays() {
-      document.getElementById('nivelValor').textContent = estado.nivel;
+      document.getElementById('nivelValor').textContent = Math.round(estado.nivel);
       document.getElementById('tempValor').textContent  = estado.temp.toFixed(1) + ' °C';
-      document.getElementById('umidValor').textContent  = estado.umid + '%';
-      document.getElementById('pressValor').textContent = estado.press + ' hPa';
-      document.getElementById('battValor').textContent  = estado.batt + ' mV';
+      document.getElementById('umidValor').textContent  = Math.round(estado.umid) + '%';
+      document.getElementById('pressValor').textContent = Math.round(estado.press) + ' hPa';
+      document.getElementById('flowValor').textContent  = Math.round(estado.flow) + ' L/s';
     }
 
     /* ============ Trend chart (Últimas medições) ============ */
@@ -257,27 +257,39 @@
     }
 
     function simulateStep() {
+      // pequenas variações do estado
       estado.nivel = Math.max(0, Math.min(400, estado.nivel + Math.round((Math.random() * 20) - 10)));
       estado.temp  = +(estado.temp + ((Math.random() * 1.4) - 0.7)).toFixed(2);
       estado.umid  = Math.max(0, Math.min(100, estado.umid + Math.round((Math.random() * 6) - 3)));
       estado.press = Math.max(900, Math.min(1100, estado.press + Math.round((Math.random() * 8) - 4)));
-      estado.batt  = Math.max(2900, Math.min(4200, estado.batt + Math.round((Math.random() * 20) - 10)));
 
+      // === VAZÃO (Opção B: linear com variação suave) ===
+      // base linear (0..400 mm => 0..1000 L/s) + pequena variação aleatória
+      const baseFlow = (estado.nivel / 400) * 1000;
+      const variacao = (Math.random() * 80) - 40; // ±40 L/s
+      estado.flow = Math.round(Math.max(0, Math.min(1000, baseFlow + variacao)));
+
+      // cor por nível de risco
+      const colorFlow = estado.flow > 800 ? '#dc3545' : estado.flow > 500 ? '#ffc107' : '#20c997';
+      gaugeFlow.data.datasets[0].backgroundColor[0] = colorFlow;
+      updateGauge(gaugeFlow, estado.flow, 0, 1000);
+
+      // atualiza outros gauges e displays
       updateGauge(gaugeNivel, estado.nivel, 0, 400);
-      updateGauge(gaugeTemp, estado.temp, -10, 50);
+      updateGauge(gaugeTemp, estado.temp, 0, 40);
       updateGauge(gaugeUmid, estado.umid, 0, 100);
       updateGauge(gaugePress, estado.press, 900, 1100);
-      updateGauge(gaugeBatt, estado.batt, 2900, 4200);
 
       updateDisplays();
       updateTrendChart(estado.nivel);
 
+      // envia para o servidor (agora com campo flow)
       sendToServer({
         nivel: estado.nivel,
         temperatura: estado.temp,
         umidade: estado.umid,
         pressao: estado.press,
-        bateria: estado.batt,
+        flow: estado.flow,
         ts: new Date().toISOString()
       });
     }
@@ -300,9 +312,7 @@
         interaction: { mode: 'index' },
         stacked: false,
         scales: {
-          x: {
-            ticks: { maxRotation: 0, minRotation: 0, autoSkip: true, padding: 6 }
-          },
+          x: { ticks: { maxRotation: 0, minRotation: 0, autoSkip: true, padding: 6 } },
           y1: { type: 'linear', position: 'left', beginAtZero: false, min: -10, max: 50, title: { display: true, text: '°C' } },
           y2: { type: 'linear', position: 'right', beginAtZero: true, min: 0, max: 100, title: { display: true, text: '%' }, grid: { drawOnChartArea: false } }
         },

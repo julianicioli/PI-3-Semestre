@@ -10,42 +10,47 @@ require_once __DIR__ . "/conexao.php";
 $db = new db();
 $link = $db->conecta_mysql();
 
-// Recebe JSON do JavaScript
+// Recebe JSON enviado pelo JS
 $json = file_get_contents("php://input");
 $data = json_decode($json, true);
 
-// Verificação de segurança básica
+// Verificação básica
 if (!$data) {
     echo json_encode([
         "status" => "erro",
-        "msg" => "JSON inválido recebido",
-        "json_recebido" => $json
+        "msg" => "JSON inválido",
+        "recebido" => $json
     ]);
     exit;
 }
 
-// Mapeia os nomes enviados pelo JS → nomes do banco
-$nivel     = $data["nivel"];        // JS → PHP
-$temperatura = $data["temperatura"];
-$umidade   = $data["umidade"];
-$pressao   = $data["pressao"];
-$bateria   = $data["bateria"];
+// ====== MAPEIA CAMPOS RECEBIDOS DO JS ======
+$nivel       = $data["nivel"];        // int
+$temperatura = $data["temperatura"];  // decimal(5,2)
+$umidade     = $data["umidade"];      // int
+$pressao     = $data["pressao"];      // int
+$vazao       = $data["flow"];         // int  <<< AGORA É FLOW!
 
-// Query corrigida com nomes da tabela REAL
+// ====== PREPARA INSERT PARA A NOVA TABELA ======
 $stmt = mysqli_prepare(
     $link,
-    "INSERT INTO sensor_readings (nivel_mm, temp_c, umid, press, batt)
+    "INSERT INTO Medicoes (nivel_agua, temperatura, umidade, pressao_atmosferica, vazao)
      VALUES (?, ?, ?, ?, ?)"
 );
 
-mysqli_stmt_bind_param($stmt, "idiii",
-    $nivel,         // int
-    $temperatura,   // decimal(5,2)
-    $umidade,       // int
-    $pressao,       // int
-    $bateria        // int
+// Tipos → "idiii"  
+// i = INT  |  d = DECIMAL
+mysqli_stmt_bind_param(
+    $stmt,
+    "idiii",
+    $nivel,        // INT
+    $temperatura,  // DECIMAL(5,2)
+    $umidade,      // INT
+    $pressao,      // INT
+    $vazao         // INT
 );
 
+// ====== EXECUTA E RETORNA JSON ======
 if (mysqli_stmt_execute($stmt)) {
     echo json_encode(["status" => "ok"]);
 } else {
@@ -57,3 +62,4 @@ if (mysqli_stmt_execute($stmt)) {
 
 mysqli_stmt_close($stmt);
 mysqli_close($link);
+?>
