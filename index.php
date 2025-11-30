@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="ico" href="../img/favicon.ico" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="ico" href="./img/favicon.ico" />
   <title>AquaSense UI - Dashboard (Itapira)</title>
 
   <!-- Bootstrap -->
@@ -73,10 +77,8 @@
 <body>
   <div class="sidebar">
     <h4 class="fw-bold mb-4 text-center">AQUASENSE UI</h4>
-    <a href="controller/adminController.php"><i class="bi bi-bar-chart-line"></i> Notícias</a>
     <a href="TelaCadastroCidadao.html"><i class="bi bi-person-plus"></i> Cadastro Cidadão</a>
-    <a href="#"><i class="bi bi-person-circle"></i> Login Cidadão</a>
-    <a href="#"><i class="bi bi-person-badge"></i> Login Funcionário</a>
+    <a href="./view/loginCidadao.php"><i class="bi bi-person-circle"></i> Login Cidadão</a>
     <hr class="border-light">
     <small class="text-white-50 d-block text-center">v2.0 • Chart.js + OpenWeather</small>
   </div>

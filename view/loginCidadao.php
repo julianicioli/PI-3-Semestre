@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     // sinaliza sucesso para mostrar modal após renderizar a página
                     $loginSuccess = true;
-                    $redirectAfter = 'cidadaoDashboard.php';
+                    $redirectAfter = './index.php';
                 } else {
                     $msg = 'E-mail ou senha incorretos.';
                     $msg_class = 'erro';
@@ -134,13 +134,14 @@ function fecharModalLogin(){
     if (!m) return;
     m.classList.remove('visible');
     m.setAttribute('aria-hidden','true');
+    // Redireciona para o dashboard do cidadão
+    window.location.href = window.location.pathname.replace('loginCidadao.php', '../index.php');
 }
 
 <?php if (!empty($loginSuccess)): ?>
 window.addEventListener('DOMContentLoaded', function(){
     try{
         abrirModalLogin();
-        setTimeout(function(){ window.location.href = '<?php echo $redirectAfter; ?>'; }, 2000);
     }catch(e){ console.error(e); }
 });
 <?php endif; ?>

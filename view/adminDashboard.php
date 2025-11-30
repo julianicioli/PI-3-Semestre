@@ -3,6 +3,24 @@ require_once __DIR__ . '/../controller/adminController.php';
 require_once __DIR__ . '/../model/Medicao.php';
 require_once __DIR__ . '/../controller/avisoController.php'; // incluir função de alerta automático
 
+// Variáveis do modal de sucesso
+$avisoEnviado = false;
+$redirectAfter = 'adminDashboard.php';
+
+// Verifica se o aviso foi enviado com sucesso
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enviar_aviso'])) {
+    // Processa o envio do aviso
+    if (!empty($_POST['emails']) && !empty($_POST['mensagem'])) {
+        $emails = $_POST['emails'];
+        $mensagem = $_POST['mensagem'];
+        
+        // Chama a função do controller para enviar os avisos
+        enviarAvisoAutomatico($emails, $mensagem);
+        
+        $avisoEnviado = true;
+    }
+}
+
 // Configurações
 $nivelCritico = 200; // mm
 $bairroAlerta = 'Boa Vista';
@@ -53,6 +71,21 @@ if ($alertaDisparado) {
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s ease; }
+.modal.visible { display: flex; }
+.modal-box { background: #fff; width: 320px; padding: 30px 25px; border-radius: 18px; text-align: center; font-family: Arial, sans-serif; box-shadow: 0 8px 30px rgba(0,0,0,0.15); animation: pop 0.25s ease-out; }
+.icon { width: 70px; height: 70px; border-radius: 50%; border: 3px solid #2ecc71; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; }
+.checkmark { width: 28px; height: 14px; border-left: 3px solid #2ecc71; border-bottom: 3px solid #2ecc71; transform: rotate(-45deg); animation: draw 0.4s ease-out; }
+.modal-box h2 { margin-top: 5px; color: #2ecc71; font-size: 22px; }
+.modal-box p { color: #555; margin: 10px 0 20px; }
+.modal-box button { background: #2ecc71; color: #fff; border: none; padding: 10px 25px; border-radius: 10px; cursor: pointer; font-size: 15px; transition: 0.2s; }
+.modal-box button:hover { background: #27ae60; }
+@keyframes pop { from { transform: scale(0.8); opacity: 0; } to   { transform: scale(1); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to   { opacity: 1; } }
+@keyframes draw { from { width: 0; height: 0; } to   { width: 28px; height: 14px; } }
+</style>
+
 <style>
 body { background-color: #f4f6f8; }
 .sidebar { width: 240px; height: 100vh; position: fixed; left: 0; top: 0; background-image: url('../img/backgroundSidebar.png'); background-size: cover; background-position: center; background-repeat: no-repeat; color: #fff; padding: 1.5rem; }
@@ -137,7 +170,7 @@ textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; bo
 </div>
 
 <h3>Filtrar e enviar aviso</h3>
-<form method="POST" action="../controller/avisoController.php">
+<form method="POST">
     <div class="row mb-3">
         <div class="col">
             <label for="filtroRua">Filtrar por Rua:</label>
@@ -192,10 +225,18 @@ textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; bo
     </table>
 </div>
 
-<button type="submit" name="enviar_aviso" class="btn btn-danger"><i class="bi bi-exclamation-triangle-fill"></i> Enviar Aviso</button>
+            <button type="submit" name="enviar_aviso" class="btn btn-danger"><i class="bi bi-exclamation-triangle-fill"></i> Enviar Aviso</button>
+        </form>
 
-
-</form>
+        <div id="modal-login" class="modal">
+            <div class="modal-box">
+                <div class="icon">
+                    <span class="checkmark"></span>
+                </div>
+                <h2>Aviso enviado!</h2>
+                <button onclick="fecharModalLogin()">Ok</button>
+            </div>
+        </div>
 
 <script>
 function selecionarPorRua() {
@@ -249,5 +290,28 @@ const graficoNivel = new Chart(ctx, {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+<script>
+    function abrirModalLogin(){
+        const m = document.getElementById('modal-login');
+        if (!m) return;
+        m.classList.add('visible');
+        m.setAttribute('aria-hidden','false');
+    }
+
+    function fecharModalLogin(){
+        const m = document.getElementById('modal-login');
+        if (!m) return;
+        m.classList.remove('visible');
+        m.setAttribute('aria-hidden','true');
+    }
+
+    <?php if (!empty($avisoEnviado)): ?>
+    window.addEventListener('DOMContentLoaded', function(){
+        try{
+            abrirModalLogin();
+        }catch(e){ console.error(e); }
+    });
+    <?php endif; ?>
+    </script>
 </body>
 </html>

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['funcionario_nome'] = $funcionario['nome'];
                     // sinaliza sucesso para mostrar modal e redirecionar em client-side
                     $loginSuccess = true;
-                    $redirectAfter = 'funcionarioDashboard.php';
+                    $redirectAfter = 'adminDashboard.php';
                 } else {
                     $msg = 'Número de registro ou senha incorretos.';
                     $msg_class = 'erro';
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="ico" href="../img/favicon.ico" />
-    <title>Login Funcionário</title>
+    <title>Login Administrador</title>
     <link rel="stylesheet" href="../css/global.css">
     <style>
     .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s ease; }
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label class="dados" for="senha">Senha:</label>
             <input type="password" name="senha" id="senha" placeholder="Digite sua senha..." required>
 
-            <input class="botão" type="submit" value="Entrar">
+            <input class="botão" type="submit" value="Entrar" href="adminDashboard.php">
         </form>
     </div>
     <div id="modal-login" class="modal">

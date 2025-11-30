@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <label class="dados" for="senha" id="senhaC">Criar senha:</label>
             <input type="password" name="senha" id="senha" placeholder="Letras (A,a) - Números (1,5,9) - Símbolos (@#$)">
-            <input class="botão" type="submit" value="Cadastrar">
+            <input class="botão" type="submit" value="Cadastrar" href="./view/cidadaoDashboard.php">
          </form>
         <div id="modal-sucesso" class="modal">
             <div class="modal-box">
@@ -309,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             function fecharModal() {
                 document.getElementById("modal-sucesso").style.display = "none";
+                window.location.href = "./view/loginCidadao.php";
             }
             // Abre automaticamente o modal de sucesso quando a página recebe ?sucesso=1
             (function() {
