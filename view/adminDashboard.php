@@ -55,7 +55,7 @@ if ($alertaDisparado) {
     }
 
     if (!empty($emailsAlerta)) {
-        $mensagem = "⚠️ Atenção! O nível do rio atingiu $nivelCritico mm no bairro $bairroAlerta. Tome precauções!";
+        $mensagem = "⚠️ Atenção! O nível do rio atingiu $nivelCritico mm no bairro $bairroAlerta. Com previsão de preciptação de chuva em 85%. Tome precauções!";
         enviarAvisoAutomatico($emailsAlerta, $mensagem);
     }
 }
@@ -118,7 +118,7 @@ textarea { width: 100%; height: 80px; padding: 0.5rem; margin-bottom: 0.5rem; bo
 <?php if(!empty($alertaDisparado)): ?>
 
 <div class="alerta-critico">
-    ⚠️ Atenção! O nível do rio atingiu o valor crítico de <?= $nivelCritico ?> mm no bairro <?= $bairroAlerta ?>. Envio de alerta disparado.
+    ⚠️ Atenção! O nível do rio atingiu o valor crítico de <?= $nivelCritico ?> mm no bairro <?= $bairroAlerta ?>, com probablidade de preciptação de chuva em 85%. Envio de alerta disparado.
 </div>
 <?php endif; ?>
 

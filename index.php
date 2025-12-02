@@ -78,7 +78,7 @@
   <div class="sidebar">
     <h4 class="fw-bold mb-4 text-center">AQUASENSE UI</h4>
     <a href="TelaCadastroCidadao.html"><i class="bi bi-person-plus"></i> Cadastro Cidadão</a>
-    <a href="./view/loginCidadao.php"><i class="bi bi-person-circle"></i> Login Cidadão</a>
+    <a href="./view/loginAdministrador.php"><i class="bi bi-person-circle"></i> Login Administrador</a>
     <hr class="border-light">
     <small class="text-white-50 d-block text-center">v2.0 • Chart.js + OpenWeather</small>
   </div>
