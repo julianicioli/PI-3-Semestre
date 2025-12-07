@@ -16,6 +16,13 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Leaflet Mapa -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Heatmap Leaflet -->
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
   <style>
     body { background-color: #f4f6f8; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
     .sidebar {
@@ -36,22 +43,15 @@
     .sidebar i { margin-right:.5rem; }
     main { margin-left:260px; padding:2rem; }
     .card { border:none; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
-
     .gauge-container { width:100%; height:160px; position:relative; }
 
-    /* TREND CHART CARD - mantém o canvas contido e garante espaço para labels */
     .card-trend { height: 350px; position: relative; }
-    .chart-area-trend { position: relative; height: calc(100% - 36px); margin-bottom: 6px; } /* 36px reservado para título/pequeno espaço */
-    #chartTrend { position: absolute; inset: 0; width:100% !important; height:100% !important; display:block; }
+    .chart-area-trend { position: relative; height: calc(100% - 36px); margin-bottom: 6px; }
+    #chartTrend { position: absolute; inset: 0; width:100%!important; height:100%!important; display:block; }
 
-    /* CLIMA CARD - gráfico + forecast dentro do mesmo card, sem sobreposição */
     .card-clima { position: relative; }
-    .chart-area-clima {
-      height: 260px;           /* altura do gráfico (ajuste se quiser) */
-      margin-bottom: 18px;     /* espaço reservado entre gráfico e previsões */
-      position: relative;
-    }
-    #chartClima { position: absolute; inset: 0; width:100% !important; height:100% !important; display:block; }
+    .chart-area-clima { height: 260px; margin-bottom: 18px; position: relative; }
+    #chartClima { position: absolute; inset: 0; width:100%!important; height:100%!important; display:block; }
 
     .forecast-cards-container {
       display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:6px;
@@ -60,10 +60,6 @@
       border-radius:10px; padding:12px; text-align:center; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.06);
       height:110px; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:100px;
     }
-    .forecast-icon img { width:48px; height:48px; object-fit:contain; }
-    .forecast-day { font-weight:700; margin-bottom:6px; }
-    .forecast-temp { font-weight:700; }
-    .forecast-hum { color:#6c757d; font-size:13px; }
 
     @media(max-width:768px){
       .sidebar{width:100%; height:auto; position:relative;}
@@ -72,6 +68,7 @@
       .chart-area-clima{height:220px;}
       .forecast-card { min-width:85px; height:auto; padding:8px; }
     }
+
   </style>
 </head>
 <body>
@@ -80,11 +77,11 @@
     <a href="TelaCadastroCidadao.html"><i class="bi bi-person-plus"></i> Cadastro Cidadão</a>
     <a href="./view/loginAdministrador.php"><i class="bi bi-person-circle"></i> Login Administrador</a>
     <hr class="border-light">
-    <small class="text-white-50 d-block text-center">v2.0 • Chart.js + OpenWeather</small>
+    <small class="text-white-50 d-block text-center">v2.0 • Chart.js + OpenWeather + Mapa</small>
   </div>
 
   <main>
-    <h2 class="fw-semibold mb-4">Nível de Água</h2>
+    <h2 class="fw-semibold mb-4">Nível de Água </h2>
 
     <div class="row g-4 mb-4">
       <div class="col-md-4">
@@ -94,8 +91,6 @@
           <div class="fw-bold fs-4 mt-2"><span id="nivelValor">246</span> <span class="text-muted fs-6">mm</span></div>
         </div>
 
-        <div class="card mb-2"><div class="card-body d-flex justify-content-between"><span class="text-muted">Últimas 24h</span><strong id="nivel24h">-- mm</strong></div></div>
-        <div class="card"><div class="card-body d-flex justify-content-between"><span class="text-muted">Máximo 24h</span><strong id="nivelMax24h">-- mm</strong></div></div>
       </div>
 
       <div class="col-md-8">
@@ -108,7 +103,21 @@
       </div>
     </div>
 
-    <h5 class="fw-semibold mb-3">Clima — Itapira</h5>
+    <!-- MAPA -->
+    <h5 class="fw-semibold mb-3 mt-4 d-flex align-items-center gap-3">
+  Mapa — Sensores do Rio em Itapira
+
+  <!-- SELECT DOS SENSORES -->
+  <select id="sensorSelect" class="form-select w-auto" style="font-size:14px;">
+    <option value="">Escolher sensor...</option>
+    <option value="0">Sensor 1 - Donati - Jardim Soares</option>
+    <option value="1">Sensor 2 - Fábrica Penha - Av. dos Italianos</option>
+    <option value="2">Sensor 3 - Jampac - Vila Penha</option>
+  </select>
+</h5>
+    <div id="map" style="width:100%; height:380px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.12);"></div>
+
+    <h5 class="fw-semibold mb-3 mt-4">Clima — Itapira</h5>
 
     <div class="row g-4">
       <div class="col-md-3">
@@ -142,7 +151,6 @@
           <strong id="flowValor">350 L/s</strong>
         </div>
       </div>
-
     </div>
 
     <div class="card p-4 mt-4 card-clima">
@@ -156,12 +164,105 @@
     </div>
   </main>
 
-  <script>
-    /* ============ CONFIG ============ */
-    const OPENWEATHER_KEY = '9cb618c25155e418a43c970d69d07256'; // sua chave
-    const CITY = 'Itapira,BR';
-    const LOCALE = 'pt_br';
+  <!-- ================ SCRIPTS ================ -->
+<script>
+/* ===================== CONFIG ===================== */
+const OPENWEATHER_KEY = "9cb618c25155e418a43c970d69d07256";
+const CITY = "Itapira,BR";
+const LOCALE = "pt_br";
 
+/* ===================== MAPA ===================== */
+
+const map = L.map("map").setView([-22.4275, -46.8232], 14);
+
+// Tile mais bonito (CartoDB)
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "&copy; OpenStreetMap"
+}).addTo(map);
+
+// Sensores
+const sensores = [
+  { nome: "Sensor 1 - Donati - Jardim Soares", lat: -22.42656, lon: -46.8243 },
+  { nome: "Sensor 2 - Fábrica Penha - Av. dos Italianos", lat: -22.43200, lon: -46.8210 },
+  { nome: "Sensor 3 - Jampac - Vila Penha do Rio do Peixe", lat: -22.42043, lon: -46.8287 }
+];
+
+// Ícones coloridos
+const iconAzul = L.icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+});
+
+const iconVermelho = L.icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+});
+
+// Criar marcadores no mapa
+let marcadores = [];
+
+sensores.forEach((s, index) => {
+  const marker = L.marker([s.lat, s.lon], { icon: iconAzul })
+    .addTo(map)
+    .bindPopup(`<strong>${s.nome}</strong>`);
+  marcadores.push(marker);
+});
+
+// ----------------------
+// SELECT PARA TROCAR SENSOR
+// ----------------------
+
+document.getElementById("sensorSelect").addEventListener("change", function () {
+  const index = this.value;
+
+  // Resetar todos para azul
+  marcadores.forEach(m => m.setIcon(iconAzul));
+
+  if (index !== "") {
+    // Colocar selecionado como vermelho
+    marcadores[index].setIcon(iconVermelho);
+    marcadores[index].openPopup();
+
+    // EXEMPLO: aqui você chama a API de clima/sensores deste marcador
+    // atualizarDadosDoSensor(index);
+  }
+});
+
+// Heatmap de chuva
+async function carregarHeatmapChuva() {
+  const url = `https://api.openweathermap.org/data/2.5/forecast?lat=-22.4356&lon=-46.8222&appid=${OPENWEATHER_KEY}&units=metric`;
+
+  try {
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    const pontos = [];
+
+    data.list.slice(0, 15).forEach(item => {
+      const chuva = item.rain ? (item.rain["3h"] || 0) : 0;
+      if (chuva > 0) {
+        pontos.push([
+          -22.4356 + (Math.random() - 0.5) * 0.02,
+          -46.8222 + (Math.random() - 0.5) * 0.02,
+          chuva / 10
+        ]);
+      }
+    });
+
+    if (pontos.length > 0) {
+      L.heatLayer(pontos, { radius: 35, blur: 25 }).addTo(map);
+    }
+
+  } catch (err) {
+    console.log("Erro heatmap:", err);
+  }
+}
+
+carregarHeatmapChuva();
+setInterval(carregarHeatmapChuva, 10 * 60 * 1000);
     /* ============ Gauges util ============ */
     function createGauge(ctx, value, min, max, color) {
       return new Chart(ctx, {

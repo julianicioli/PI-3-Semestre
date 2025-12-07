@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enviar_aviso'])) {
 
 // Configurações
 $nivelCritico = 200; // mm
-$bairroAlerta = 'Boa Vista';
+$bairroAlerta = 'Vila Penha do Rio do Peixe';
 
 // Pegar listas únicas de ruas e bairros do banco
 $ruas = array_unique(array_column($cidadaos, 'rua'));
